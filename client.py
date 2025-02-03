@@ -3,6 +3,7 @@ import websocket
 import numpy as np
 import threading
 import time
+import json
 
 class Client:
     '''
@@ -40,20 +41,38 @@ class Client:
 
 
 
+
     '''
     Websocket callbacks
     '''
     def on_open(self, ws):
         print("Opened connection")
+        ws.send(
+            json.dumps(
+                {
+                    "test": "open connection"
+                }
+            )
+        )
+
+
+
 
     def on_message(self, ws, message):
         print("Received message from server:", message)
 
+
+
+
     def on_error(self, ws, error):
         print("WebSocket error:", error)
 
+
+
+
     def on_close(self, ws, close_status_code, close_msg):
         print("### closed ###")
+
 
 
 
@@ -73,6 +92,8 @@ class Client:
             print("Error sending packet:", e)
 
 
+
+
     '''
     Helper function for recording audio
     '''
@@ -82,6 +103,8 @@ class Client:
         (Ensure the dtype matches your audio format.)
         """
         return np.frombuffer(data, dtype=np.float32)
+
+
 
 
     '''
@@ -130,8 +153,11 @@ class Client:
         self.client_socket.close() # close websocket connection
         print("Stopped recording and closed the connection.")
 
+
+
+
 if __name__ == "__main__":
-    host = None
-    port = None
-    client = Client(host, port, record_seconds=10)
+    host = "localhost" # use localhost since running client and server on same machine
+    port = 9090
+    client = Client(host, port, record_seconds=100)
     client.start()
