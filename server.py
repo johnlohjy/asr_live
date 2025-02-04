@@ -4,7 +4,8 @@ from websockets.sync.server import serve
 from websockets.exceptions import ConnectionClosed
 import json
 import numpy as np
-import sys
+import os
+import wave
 
 class Client:
     def __init__(self):
@@ -23,8 +24,17 @@ class Client:
             # Append the new audio chunk to the existing frames buffer
             self.frames_np = np.concatenate((self.frames_np, frame_np), axis=0)
 
-    def test_save_frames(self):
-        pass
+    def save_frames(self):
+        '''
+        Sample code to save the audio when client disconnects
+        '''
+        fp = os.path.join(os.getcwd(), "test_frames.wav")
+        with wave.open(fp, "wb") as wavfile:
+            wavfile: wave.Wave_write
+            wavfile.setnchannels(1)
+            wavfile.setsampwidth(2)
+            wavfile.setframerate(16000)
+            wavfile.writeframes(self.frames_np)
 
 
 
@@ -130,9 +140,7 @@ class Server:
         # Get the client using its associated WebSocket
         client = self.client_manager.get_client(websocket)
 
-
-
-
+        client.add_frames(frame_np)
 
         # Send a dummy transcription
         # https://websockets.readthedocs.io/en/stable/reference/sync/server.html#websockets.sync.server.ServerConnection.send
@@ -160,11 +168,15 @@ class Server:
             return
         
         try:
+            # Continously process audio frames
             while True: 
                 if not self.process_audio_frames(websocket):
                     break
         except ConnectionClosed:
             print("Connection closed by client")
+            client = self.client_manager.get_client(websocket)
+            client.save_frames()
+            print("Saved client frames")
         except Exception as e:
             print(f'Error: {e}')
         finally:
