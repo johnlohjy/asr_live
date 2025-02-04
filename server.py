@@ -6,6 +6,27 @@ import json
 import numpy as np
 import sys
 
+class Client:
+    def __init__(self):
+        self.frames_np = None
+
+    def add_frames(self, frame_np):
+        '''
+        Add new audio chunks to frames buffer
+
+        Check if need lock in the future
+        '''
+        if self.frames_np is None:
+            # If the frames buffer is empty, initialise it with the new audio frames
+            self.frames_np = frame_np.copy()
+        else:
+            # Append the new audio chunk to the existing frames buffer
+            self.frames_np = np.concatenate((self.frames_np, frame_np), axis=0)
+
+    def test_save_frames(self):
+        pass
+
+
 
 
 
@@ -50,7 +71,7 @@ class Server:
         '''
         Initialize the new client and add it to the client manager
         '''
-        client = "test_client"
+        client = Client()
         self.client_manager.add_client(websocket, client)
 
 
@@ -104,8 +125,14 @@ class Server:
         Send a dummy transcription back to the client first
         '''
         # Get the audio chunk from the WebSocket as a numpy array
-        frames_np = self.get_audio_from_websocket(websocket)
+        frame_np = self.get_audio_from_websocket(websocket)
         print('"Received" audio chunk')
+        # Get the client using its associated WebSocket
+        client = self.client_manager.get_client(websocket)
+
+
+
+
 
         # Send a dummy transcription
         # https://websockets.readthedocs.io/en/stable/reference/sync/server.html#websockets.sync.server.ServerConnection.send
