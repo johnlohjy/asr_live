@@ -1,8 +1,10 @@
 # https://websockets.readthedocs.io/en/stable/reference/sync/server.html
 # check what's the diff between the threading library and asyncio library
 from websockets.sync.server import serve
+from websockets.exceptions import ConnectionClosed
 import json
 import numpy as np
+import sys
 
 
 
@@ -106,11 +108,15 @@ class Server:
         print('"Received" audio chunk')
 
         # Send a dummy transcription
+        # https://websockets.readthedocs.io/en/stable/reference/sync/server.html#websockets.sync.server.ServerConnection.send
+        # ServerConnection provides recv() and send() methods for receiving and sending messages.
         websocket.send(
             json.dumps({
                 "test": "test response",
             })
         )
+
+        return True
 
 
 
@@ -126,8 +132,18 @@ class Server:
         if not self.handle_new_connection(websocket):
             return
         
-        self.process_audio_frames(websocket)
-        
+        try:
+            while True: 
+                if not self.process_audio_frames(websocket):
+                    break
+        except ConnectionClosed:
+            print("Connection closed by client")
+        except Exception as e:
+            print(f'Error: {e}')
+        finally:
+            websocket.close()
+            del websocket
+
 
 
 
@@ -143,7 +159,7 @@ class Server:
         '''
         Create a WebSocket Server (threading) that listens on host and port
 
-        Whenever a client connects, the server creates a ServerConnection, performs the opening handshake, 
+        Whenever a client connects, the server creates a ServerConnection (threading implementation of a WebSocket server connection), performs the opening handshake, 
         and delegates to the handler
 
         The handler receives the ServerConnection instance, which we can use to send and receive messages.
@@ -153,7 +169,9 @@ class Server:
         Treat as context manager. Call serve_forever() to serve requests
         '''
 
+        # https://websockets.readthedocs.io/en/stable/reference/sync/server.html
         with serve(handler=self.recv_audio, host=host, port=port) as server:
+            print(f'Running Server on ws://{host}:{port}')
             server.serve_forever()
 
         

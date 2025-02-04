@@ -24,6 +24,7 @@ class Client:
         # Initialise WebSocketApp for long-lived connection
         # https://websocket-client.readthedocs.io/en/latest/examples.html
         # https://websocket-client.readthedocs.io/en/latest/app.html#websocket._app.WebSocketApp.__init__
+        # https://stackoverflow.com/questions/61908883/difference-between-websocket-and-websockets
         self.socket_url = f"ws://{host}:{port}"
         self.client_socket = websocket.WebSocketApp(
             self.socket_url, # websocket url
@@ -36,8 +37,9 @@ class Client:
         # Start Websocket client in a separate thread 
         # Multithreading is good for use-cases with a lot of I/O (implied waiting time)
         # - seamless thread switching during wait times when necessary
+        # https://websocket-client.readthedocs.io/en/latest/app.html#websocket._app.WebSocketApp.run_forever
         self.ws_thread = threading.Thread(target=self.client_socket.run_forever)
-        self.ws_thread.setDaemon(True)
+        self.ws_thread.daemon = True
 
 
 
@@ -46,6 +48,13 @@ class Client:
     Websocket callbacks
     '''
     def on_open(self, ws):
+        '''
+        Callback function called when the WebSocket connection is successfully opened.
+
+        Sends an initial configuration message to the server
+
+        ws -> WebSocket client instance
+        '''
         print("Opened connection")
         ws.send(
             json.dumps(
@@ -59,6 +68,7 @@ class Client:
 
 
     def on_message(self, ws, message):
+        # Callback function called when a message is received from the server.
         print("Received message from server:", message)
 
 
@@ -87,6 +97,7 @@ class Client:
             message (bytes): The audio data packet in bytes to be sent to the server.
         """
         try:
+            # https://websocket-client.readthedocs.io/en/latest/app.html#websocket._app.WebSocketApp.send
             self.client_socket.send(message, opcode=websocket.ABNF.OPCODE_BINARY)
         except Exception as e:
             print("Error sending packet:", e)
@@ -115,7 +126,7 @@ class Client:
         self.ws_thread.start()
 
         # Wait briefly to ensure connection is established
-        time.sleep(1)
+        time.sleep(5)
 
         # Open the audio stream for recording
         # https://people.csail.mit.edu/hubert/pyaudio/docs/#class-pyaudio
