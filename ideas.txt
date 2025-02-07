@@ -1,0 +1,3 @@
+Training data:
+
+- Put a longer pause between training samples? 
