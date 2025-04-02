@@ -1,4 +1,3 @@
 silero_vad.onnx
-sample.wav
-sample_wavs
-audio_samples_find_ideal_context_len/
+custom_test_set/
+vad_reference/
