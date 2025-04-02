@@ -1,0 +1,41 @@
+##################################################################################
+Test set
+
+4 samples * 2 same room speakers * 2 separate room speakers * 30 seconds = 480s
+480s = 8 minutes
+
+8 samples * 2 same room speakers * 2 separate room speakers * 30 seconds = 960s
+960s = 16 minutes
+
+16 samples * 2 same room speakers * 2 separate room speakers * 30 seconds = 1920s
+1920s = 32 minutes
+
+4 samples * 3 same room speakers * 3 separate room speakers * 30 seconds = 1080s
+1080s = 18 minutes
+
+
+Use 
+8 samples * 2 same room speakers * 2 separate room speakers * 30 seconds = 960s
+960s = 16 minutes
+
+Same room speakers: 3148-2, 3147-1
+Separate room speakers: conf_2690_2690_00862467, conf_2688_2688_00862561
+##################################################################################
+
+Tests 
+
+Live Transcription Simulation Sliding Window HFtest
+
+context window size = 20, no prev context
+- WER:
+context window size = 15, no prev context
+- WER:
+context window size = 10, no prev context
+- WER:
+
+^Plot graph
+
+Live Transcription Simulation Pauses HFtest
+no prev context
+- WER:
+
